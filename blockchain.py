@@ -10,8 +10,7 @@ class Blockchain:
         genesisBlock= {
             "index":1,
             "timestamp":time.time(),
-            "nonce":0,
-            "hash":"hash",
+            "transactions":[],
             "previousBlockHash":"0",
         }
         genesisBlock["hash"],genesisBlock["nonce"]=self.generateHash(genesisBlock)
@@ -24,7 +23,7 @@ class Blockchain:
         nonce = 0
         json_string=json.dumps(block,sort_keys=True)
         while True:
-            hash_input=f"{block['previousBlockHash']}{block['timestamp']}{nonce}{json_string}"
+            hash_input=f"{block['previousBlockHash']}{nonce}{json_string}"
             hash=hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
             if hash[:3]=="000":
                 return hash,nonce
@@ -48,12 +47,18 @@ class Blockchain:
         self.chain.append(newBlock)
         self.pendingTransactions=[]
     
+    def printChain(self):
+        for block in self.chain:
+            print(json.dumps(block,indent=' '))
+    
 
 obj = Blockchain()
 
 obj.createNewTransaction("100","Marcus","Thomas")
-obj.createNewTransaction("100","Marcus","Thomas")
 obj.createNewBlock()
-print(f"chain : {obj.chain}")
-print(f"Pending Transactions : {obj.pendingTransactions}")
+obj.createNewTransaction("10","Alice","Bob")
+obj.createNewBlock()
+obj.printChain()
+# print(f"chain : {obj.chain}")
+# print(f"Pending Transactions : {obj.pendingTransactions}")
 
