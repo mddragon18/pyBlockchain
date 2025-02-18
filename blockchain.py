@@ -22,7 +22,7 @@ class Blockchain:
     def generateHash(self,previousBlockHash,timestamp,transactions):
         nonce = 0
         while True:
-            hash_input=f"{previousBlockHash}{timestamp}{transactions}{nonce}"
+            hash_input=f"{previousBlockHash}{timestamp}{json.dumps(transactions,sort_keys=True)}{nonce}"
             hash=hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
             if hash[:3]=="000":
                 return hash,nonce
