@@ -1,0 +1,62 @@
+<html>
+
+<head>
+<title>Blockchain interface</title>
+</head>
+
+<body>
+    <h1 style="text-align: center;">Blockchain interface:</h1>
+    <br><hr>
+
+    <h2>Chain Data</h2>
+    <pre id="chain-data"></pre>
+    <br><hr>
+
+    <h2>Mine new block</h2>
+    <button style="padding: 5px;" onclick="mineBlock()"> Mine block </button>
+    <br>
+
+    <h2>Create new transaction</h2>
+    <input type="text" placeholder="Sender" id="sender">
+    <input type="text "placeholder="Recipient" id="recipient">
+    <input type="number" placeholder="Amount" id="amount">
+    <button style="padding: 5px;" onclick="submit()">Create new tx</button>
+
+
+    <script>
+        async function fetchChain() {
+            let response = await fetch('http://127.0.0.1:5000/get-chain')
+            let data=await response.json()
+            document.getElementById("chain-data").innerHTML=JSON.stringify(data,null,2)
+        }
+
+        async function mineBlock() {
+            let response = await fetch('http://127.0.0.1:5000/mine-block',{method:'POST'})
+            let data=await response.json()
+            alert(data.message)
+            fetchChain()
+
+        }
+
+        async function submit() {
+            let sender=document.getElementById('sender').value
+            let recipient=document.getElementById('recipient').value
+            let amount=document.getElementById('amount').value
+
+            let response=await fetch('http://127.0.0.1:5000/create-tx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount,sender,recipient})})
+            let data = await response.json()
+            alert(data.message)
+            
+        }
+        fetchChain()
+
+    </script>
+
+
+
+
+
+
+</body>
+
+</html>

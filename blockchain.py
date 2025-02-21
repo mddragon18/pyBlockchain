@@ -1,21 +1,14 @@
 import time
 import hashlib
 import json
+from flask import Flask,jsonify,request
+from flask_cors import CORS
 
 class Blockchain:
     def __init__(self):                                 
         self.chain=[]
         self.pendingTransactions=[]
         self.createNewBlock(nonce=1,previousHash="0")               # Creates the genesis block with a nonce 1 , there is no previous block
-    
-    # def createGenesisBlock(self):
-    #     genesisBlock= {
-    #         "index":1,
-    #         "timestamp":time.time(),
-    #         "transactions":[],
-    #         "previousBlockHash":"0",
-    #     }
-    #     return genesisBlock
     
     def getLastBlock(self):                                        # Used to fetch the previous block in the chain
         return self.chain[-1]
@@ -35,10 +28,10 @@ class Blockchain:
     
     
     
-    def createNewTransaction(self,amount,sender,recepient):         
+    def createNewTransaction(self,amount,sender,recipient):         
         newTransaction = {"amount":amount,
                           "sender":sender,
-                          "recepient":recepient}
+                          "recipient":recipient}
         self.pendingTransactions.append(newTransaction)
         
     
@@ -50,7 +43,6 @@ class Blockchain:
             "nonce":nonce,
             "previousBlockHash":previousHash,
         }
-        # newBlock["nonce"]=self.nonceOfWork(previousBlock["nonce"])
         self.chain.append(newBlock)
         self.pendingTransactions=[]
         
@@ -60,6 +52,7 @@ class Blockchain:
         previousNonce=previousBlock["nonce"]
         nonce=self.nonceOfWork(previousNonce)
         self.createNewBlock(nonce,previousHash)
+        
         
     def validateChain(self):
         previousBlock=self.chain[0]
@@ -83,16 +76,38 @@ class Blockchain:
             
         
     def printChain(self):
-        for block in self.chain:
-            print(json.dumps(block,indent=2))
+        return self.chain
+    
+obj = Blockchain()
+app=Flask(__name__)
+CORS(app)
+
+@app.route('/get-chain',methods=['GET'])
+def getChain():
+    return jsonify(obj.printChain())
+
+@app.route('/mine-block',methods=['POST'])
+def mine():
+    obj.mineBlock()
+    return jsonify({'message':'Block mined succesfully','chain':obj.chain})
+
+@app.route('/create-tx',methods=['POST'])
+def createTx():
+    data=request.json
+    sender=data.get('sender')
+    recipient=data.get('recipient')
+    amount=data.get('amount')
+    if not sender or not recipient or not amount:
+        return jsonify({"error":"Missing transaction data"})
+    obj.createNewTransaction(amount,sender,recipient)
+    return jsonify({"message":"transaction added successfully","pendingTransactions":obj.pendingTransactions})
+
     
 
-#Plan to make a flask app with this structure.
 
 
-obj = Blockchain()
-obj.createNewTransaction(100,"Me","You")
-obj.mineBlock()
-print(obj.validateChain())
-obj.printChain()
+
+
+
+app.run(debug=True)
 
